@@ -1,0 +1,528 @@
+CBMC version 6.4.0 (cbmc-6.4.0) 64-bit arm64 macos
+Type-checking array_tiling_tcpy
+Generating GOTO Program
+Adding CPROVER library (arm64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Starting Bounded Model Checking
+
+Program constraints:
+// 68 file <built-in-additions> line 24
+// 68 file <built-in-additions> line 24
+// 51 file <built-in-additions> line 8
+(1) SHARED_WRITE(__CPROVER_dead_object#1)
+// 51 file <built-in-additions> line 8
+(2) __CPROVER_dead_object#1 == NULL
+// 52 file <built-in-additions> line 7
+(3) SHARED_WRITE(__CPROVER_deallocated#1)
+// 52 file <built-in-additions> line 7
+(4) __CPROVER_deallocated#1 == NULL
+// 53 file <built-in-additions> line 12
+(5) __CPROVER_max_malloc_size!0#1 == 36028797018963968ul
+// 54 file <built-in-additions> line 9
+(6) SHARED_WRITE(__CPROVER_memory_leak#1)
+// 54 file <built-in-additions> line 9
+(7) __CPROVER_memory_leak#1 == NULL
+// 55 file <built-in-additions> line 16
+(8) __CPROVER_rounding_mode!0#1 == 0
+// 56 
+// 69 file array_tiling_tcpy.c line 29
+// 69 file array_tiling_tcpy.c line 29
+// 0 file array_tiling_tcpy.c line 31 function main
+// 1 file array_tiling_tcpy.c line 31 function main
+// 2 file array_tiling_tcpy.c line 31 function main
+(9) return_value___VERIFIER_nondet_int!0@1#2 == nondet_symbol<signed int>(symex::nondet0)
+// 3 file array_tiling_tcpy.c line 31 function main
+(10) S!0@1#2 == return_value___VERIFIER_nondet_int!0@1#2
+// 5 file array_tiling_tcpy.c line 32 function main
+// 5 file array_tiling_tcpy.c line 32 function main
+// 5 file array_tiling_tcpy.c line 32 function main
+(11) cond!0@1#1 == (S!0@1#2 >= 2 ? 1 : 0)
+// 61 file array_tiling_tcpy.c line 12 function assume_abort_if_not
+// 61 file array_tiling_tcpy.c line 12 function assume_abort_if_not
+(12) \guard#1 == (cond!0@1#1 == 0)
+// 62 file array_tiling_tcpy.c line 14 function assume_abort_if_not
+// 62 file array_tiling_tcpy.c line 14 function assume_abort_if_not
+// 57 file <builtin-library-abort> line 6 function abort
+(13) ASSUME(!\guard#1)
+     guard: \guard#1
+// 58 file <builtin-library-abort> line 10 function abort
+// 63 file array_tiling_tcpy.c line 16 function assume_abort_if_not
+// 6 file array_tiling_tcpy.c line 33 function main
+// 6 file array_tiling_tcpy.c line 33 function main
+// 6 file array_tiling_tcpy.c line 33 function main
+(14) cond!0@2#1 == (S!0@1#2 >= 1073741823 ? 0 : 1)
+// 61 file array_tiling_tcpy.c line 12 function assume_abort_if_not
+// 61 file array_tiling_tcpy.c line 12 function assume_abort_if_not
+(15) \guard#2 == (cond!0@2#1 == 0)
+// 62 file array_tiling_tcpy.c line 14 function assume_abort_if_not
+// 62 file array_tiling_tcpy.c line 14 function assume_abort_if_not
+// 57 file <builtin-library-abort> line 6 function abort
+(16) ASSUME(!\guard#2)
+     guard: \guard#2
+// 58 file <builtin-library-abort> line 10 function abort
+// 63 file array_tiling_tcpy.c line 16 function assume_abort_if_not
+// 7 file array_tiling_tcpy.c line 34 function main
+// 8 file array_tiling_tcpy.c line 35 function main
+// 9 file array_tiling_tcpy.c line 35 function main
+(17) ASSERT(!overflow("*", signed int, 2, S!0@1#2))
+// 10 file array_tiling_tcpy.c line 35 function main
+(18) a$array_size!0@1#2 == (__CPROVER_size_t)(signed long int)(2 * S!0@1#2)
+// 11 file array_tiling_tcpy.c line 35 function main
+// 12 file array_tiling_tcpy.c line 36 function main
+// 13 file array_tiling_tcpy.c line 36 function main
+(19) acopy$array_size!0@1#2 == (__CPROVER_size_t)(signed long int)(2 * S!0@1#2)
+// 14 file array_tiling_tcpy.c line 36 function main
+// 15 file array_tiling_tcpy.c line 38 function main
+(20) i!0@1#2 == 0
+// 16 file array_tiling_tcpy.c line 38 function main
+// 16 file array_tiling_tcpy.c line 38 function main
+(21) \guard#3 == S!0@1#2 >= 1
+// 17 file array_tiling_tcpy.c line 40 function main
+(22) ASSERT(\guard#3 ==> !overflow("*", signed int, 2, S!0@1#2))
+     guard: \guard#3
+// 19 file array_tiling_tcpy.c line 40 function main
+(23) ASSERT(\guard#3 ==> !overflow("-", signed int, 2 * S!0@1#2, 1))
+     guard: \guard#3
+// 20 file array_tiling_tcpy.c line 40 function main
+(24) ASSERT(\guard#3 ==> (signed long int)(2 * S!0@1#2 + -1) * 4l >= 0l)
+     guard: \guard#3
+// 21 file array_tiling_tcpy.c line 40 function main
+(25) ASSERT(\guard#3 ==> !((__CPROVER_size_t)(signed long int)(2 * S!0@1#2 + -1) >= acopy$array_size!0@1#2))
+     guard: \guard#3
+// 22 file array_tiling_tcpy.c line 40 function main
+(26) ASSERT(\guard#3 ==> (signed long int)(2 * S!0@1#2 + -1) * 4l >= 0l)
+     guard: \guard#3
+// 23 file array_tiling_tcpy.c line 40 function main
+(27) ASSERT(\guard#3 ==> !((__CPROVER_size_t)(signed long int)(2 * S!0@1#2 + -1) >= a$array_size!0@1#2))
+     guard: \guard#3
+// 24 file array_tiling_tcpy.c line 40 function main
+(28) acopy!0@1#2 == acopy!0@1#1 WITH [(signed long int)(2 * S!0@1#2 + -1):=a!0@1#1[(signed long int)(2 * S!0@1#2 + -1)]]
+     guard: \guard#3
+// 26 file array_tiling_tcpy.c line 41 function main
+(29) ASSERT(\guard#3 ==> acopy$array_size!0@1#2 >= 1ul)
+     guard: \guard#3
+// 28 file array_tiling_tcpy.c line 41 function main
+(30) ASSERT(\guard#3 ==> a$array_size!0@1#2 >= 1ul)
+     guard: \guard#3
+// 29 file array_tiling_tcpy.c line 41 function main
+(31) acopy!0@1#3 == acopy!0@1#2 WITH [0l:=a!0@1#1[0l]]
+     guard: \guard#3
+// 30 file array_tiling_tcpy.c line 38 function main
+(32) i!0@1#3 == 1
+     guard: \guard#3
+// 31 file array_tiling_tcpy.c line 38 function main
+// 16 file array_tiling_tcpy.c line 38 function main
+// 16 file array_tiling_tcpy.c line 38 function main
+(33) \guard#4 == S!0@1#2 >= 2
+// 17 file array_tiling_tcpy.c line 40 function main
+(34) ASSERT(\guard#3 && \guard#4 ==> !overflow("*", signed int, 2, S!0@1#2))
+     guard: \guard#3 && \guard#4
+// 19 file array_tiling_tcpy.c line 40 function main
+(35) ASSERT(\guard#3 && \guard#4 ==> !overflow("-", signed int, 2 * S!0@1#2, 2))
+     guard: \guard#3 && \guard#4
+// 20 file array_tiling_tcpy.c line 40 function main
+(36) ASSERT(\guard#3 && \guard#4 ==> (signed long int)(2 * S!0@1#2 + -2) * 4l >= 0l)
+     guard: \guard#3 && \guard#4
+// 21 file array_tiling_tcpy.c line 40 function main
+(37) ASSERT(\guard#3 && \guard#4 ==> !((__CPROVER_size_t)(signed long int)(2 * S!0@1#2 + -2) >= acopy$array_size!0@1#2))
+     guard: \guard#3 && \guard#4
+// 22 file array_tiling_tcpy.c line 40 function main
+(38) ASSERT(\guard#3 && \guard#4 ==> (signed long int)(2 * S!0@1#2 + -2) * 4l >= 0l)
+     guard: \guard#3 && \guard#4
+// 23 file array_tiling_tcpy.c line 40 function main
+(39) ASSERT(\guard#3 && \guard#4 ==> !((__CPROVER_size_t)(signed long int)(2 * S!0@1#2 + -2) >= a$array_size!0@1#2))
+     guard: \guard#3 && \guard#4
+// 24 file array_tiling_tcpy.c line 40 function main
+(40) acopy!0@1#4 == acopy!0@1#3 WITH [(signed long int)(2 * S!0@1#2 + -2):=a!0@1#1[(signed long int)(2 * S!0@1#2 + -2)]]
+     guard: \guard#3 && \guard#4
+// 26 file array_tiling_tcpy.c line 41 function main
+(41) ASSERT(\guard#3 && \guard#4 ==> acopy$array_size!0@1#2 >= 2ul)
+     guard: \guard#3 && \guard#4
+// 28 file array_tiling_tcpy.c line 41 function main
+(42) ASSERT(\guard#3 && \guard#4 ==> a$array_size!0@1#2 >= 2ul)
+     guard: \guard#3 && \guard#4
+// 29 file array_tiling_tcpy.c line 41 function main
+(43) acopy!0@1#5 == acopy!0@1#4 WITH [1l:=a!0@1#1[1l]]
+     guard: \guard#3 && \guard#4
+// 30 file array_tiling_tcpy.c line 38 function main
+(44) i!0@1#4 == 2
+     guard: \guard#3 && \guard#4
+// 31 file array_tiling_tcpy.c line 38 function main
+// 16 file array_tiling_tcpy.c line 38 function main
+// 16 file array_tiling_tcpy.c line 38 function main
+(45) \guard#5 == S!0@1#2 >= 3
+// 17 file array_tiling_tcpy.c line 40 function main
+(46) ASSERT(\guard#3 && \guard#4 && \guard#5 ==> !overflow("*", signed int, 2, S!0@1#2))
+     guard: \guard#3 && \guard#4 && \guard#5
+// 19 file array_tiling_tcpy.c line 40 function main
+(47) ASSERT(\guard#3 && \guard#4 && \guard#5 ==> !overflow("-", signed int, 2 * S!0@1#2, 3))
+     guard: \guard#3 && \guard#4 && \guard#5
+// 20 file array_tiling_tcpy.c line 40 function main
+(48) ASSERT(\guard#3 && \guard#4 && \guard#5 ==> (signed long int)(2 * S!0@1#2 + -3) * 4l >= 0l)
+     guard: \guard#3 && \guard#4 && \guard#5
+// 21 file array_tiling_tcpy.c line 40 function main
+(49) ASSERT(\guard#3 && \guard#4 && \guard#5 ==> !((__CPROVER_size_t)(signed long int)(2 * S!0@1#2 + -3) >= acopy$array_size!0@1#2))
+     guard: \guard#3 && \guard#4 && \guard#5
+// 22 file array_tiling_tcpy.c line 40 function main
+(50) ASSERT(\guard#3 && \guard#4 && \guard#5 ==> (signed long int)(2 * S!0@1#2 + -3) * 4l >= 0l)
+     guard: \guard#3 && \guard#4 && \guard#5
+// 23 file array_tiling_tcpy.c line 40 function main
+(51) ASSERT(\guard#3 && \guard#4 && \guard#5 ==> !((__CPROVER_size_t)(signed long int)(2 * S!0@1#2 + -3) >= a$array_size!0@1#2))
+     guard: \guard#3 && \guard#4 && \guard#5
+// 24 file array_tiling_tcpy.c line 40 function main
+(52) acopy!0@1#6 == acopy!0@1#5 WITH [(signed long int)(2 * S!0@1#2 + -3):=a!0@1#1[(signed long int)(2 * S!0@1#2 + -3)]]
+     guard: \guard#3 && \guard#4 && \guard#5
+// 26 file array_tiling_tcpy.c line 41 function main
+(53) ASSERT(\guard#3 && \guard#4 && \guard#5 ==> acopy$array_size!0@1#2 >= 3ul)
+     guard: \guard#3 && \guard#4 && \guard#5
+// 28 file array_tiling_tcpy.c line 41 function main
+(54) ASSERT(\guard#3 && \guard#4 && \guard#5 ==> a$array_size!0@1#2 >= 3ul)
+     guard: \guard#3 && \guard#4 && \guard#5
+// 29 file array_tiling_tcpy.c line 41 function main
+(55) acopy!0@1#7 == acopy!0@1#6 WITH [2l:=a!0@1#1[2l]]
+     guard: \guard#3 && \guard#4 && \guard#5
+// 30 file array_tiling_tcpy.c line 38 function main
+(56) i!0@1#5 == 3
+     guard: \guard#3 && \guard#4 && \guard#5
+// 31 file array_tiling_tcpy.c line 38 function main
+// 16 file array_tiling_tcpy.c line 38 function main
+// 16 file array_tiling_tcpy.c line 38 function main
+(57) \guard#6 == S!0@1#2 >= 4
+// 17 file array_tiling_tcpy.c line 40 function main
+(58) ASSERT(\guard#3 && \guard#4 && \guard#5 && \guard#6 ==> !overflow("*", signed int, 2, S!0@1#2))
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6
+// 19 file array_tiling_tcpy.c line 40 function main
+(59) ASSERT(\guard#3 && \guard#4 && \guard#5 && \guard#6 ==> !overflow("-", signed int, 2 * S!0@1#2, 4))
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6
+// 20 file array_tiling_tcpy.c line 40 function main
+(60) ASSERT(\guard#3 && \guard#4 && \guard#5 && \guard#6 ==> (signed long int)(2 * S!0@1#2 + -4) * 4l >= 0l)
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6
+// 21 file array_tiling_tcpy.c line 40 function main
+(61) ASSERT(\guard#3 && \guard#4 && \guard#5 && \guard#6 ==> !((__CPROVER_size_t)(signed long int)(2 * S!0@1#2 + -4) >= acopy$array_size!0@1#2))
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6
+// 22 file array_tiling_tcpy.c line 40 function main
+(62) ASSERT(\guard#3 && \guard#4 && \guard#5 && \guard#6 ==> (signed long int)(2 * S!0@1#2 + -4) * 4l >= 0l)
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6
+// 23 file array_tiling_tcpy.c line 40 function main
+(63) ASSERT(\guard#3 && \guard#4 && \guard#5 && \guard#6 ==> !((__CPROVER_size_t)(signed long int)(2 * S!0@1#2 + -4) >= a$array_size!0@1#2))
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6
+// 24 file array_tiling_tcpy.c line 40 function main
+(64) acopy!0@1#8 == acopy!0@1#7 WITH [(signed long int)(2 * S!0@1#2 + -4):=a!0@1#1[(signed long int)(2 * S!0@1#2 + -4)]]
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6
+// 26 file array_tiling_tcpy.c line 41 function main
+(65) ASSERT(\guard#3 && \guard#4 && \guard#5 && \guard#6 ==> acopy$array_size!0@1#2 >= 4ul)
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6
+// 28 file array_tiling_tcpy.c line 41 function main
+(66) ASSERT(\guard#3 && \guard#4 && \guard#5 && \guard#6 ==> a$array_size!0@1#2 >= 4ul)
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6
+// 29 file array_tiling_tcpy.c line 41 function main
+(67) acopy!0@1#9 == acopy!0@1#8 WITH [3l:=a!0@1#1[3l]]
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6
+// 30 file array_tiling_tcpy.c line 38 function main
+(68) i!0@1#6 == 4
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6
+// 31 file array_tiling_tcpy.c line 38 function main
+// 16 file array_tiling_tcpy.c line 38 function main
+// 16 file array_tiling_tcpy.c line 38 function main
+(69) \guard#7 == S!0@1#2 >= 5
+// 17 file array_tiling_tcpy.c line 40 function main
+(70) ASSERT(\guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7 ==> !overflow("*", signed int, 2, S!0@1#2))
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7
+// 19 file array_tiling_tcpy.c line 40 function main
+(71) ASSERT(\guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7 ==> !overflow("-", signed int, 2 * S!0@1#2, 5))
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7
+// 20 file array_tiling_tcpy.c line 40 function main
+(72) ASSERT(\guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7 ==> (signed long int)(2 * S!0@1#2 + -5) * 4l >= 0l)
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7
+// 21 file array_tiling_tcpy.c line 40 function main
+(73) ASSERT(\guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7 ==> !((__CPROVER_size_t)(signed long int)(2 * S!0@1#2 + -5) >= acopy$array_size!0@1#2))
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7
+// 22 file array_tiling_tcpy.c line 40 function main
+(74) ASSERT(\guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7 ==> (signed long int)(2 * S!0@1#2 + -5) * 4l >= 0l)
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7
+// 23 file array_tiling_tcpy.c line 40 function main
+(75) ASSERT(\guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7 ==> !((__CPROVER_size_t)(signed long int)(2 * S!0@1#2 + -5) >= a$array_size!0@1#2))
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7
+// 24 file array_tiling_tcpy.c line 40 function main
+(76) acopy!0@1#10 == acopy!0@1#9 WITH [(signed long int)(2 * S!0@1#2 + -5):=a!0@1#1[(signed long int)(2 * S!0@1#2 + -5)]]
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7
+// 25 file array_tiling_tcpy.c line 41 function main
+(77) ASSUME(!(\guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7))
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7
+// 26 file array_tiling_tcpy.c line 41 function main
+(78) ASSUME(!(\guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7))
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7
+// 27 file array_tiling_tcpy.c line 41 function main
+(79) ASSUME(!(\guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7))
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7
+// 28 file array_tiling_tcpy.c line 41 function main
+(80) ASSUME(!(\guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7))
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7
+// 29 file array_tiling_tcpy.c line 41 function main
+(81) ASSUME(!(\guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7))
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7
+// 30 file array_tiling_tcpy.c line 38 function main
+(82) ASSUME(!(\guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7))
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7
+// 31 file array_tiling_tcpy.c line 38 function main
+(83) ASSUME(!(\guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7))
+     guard: \guard#3 && \guard#4 && \guard#5 && \guard#6 && \guard#7
+// 32 file array_tiling_tcpy.c line 44 function main
+(84) i!0@1#7 == (\guard#6 ? 4 : 3)
+// 32 file array_tiling_tcpy.c line 44 function main
+(85) acopy!0@1#11 == (\guard#6 ? acopy!0@1#9 : acopy!0@1#7)
+// 32 file array_tiling_tcpy.c line 44 function main
+(86) i!0@1#8 == (\guard#5 ? i!0@1#7 : 2)
+// 32 file array_tiling_tcpy.c line 44 function main
+(87) acopy!0@1#12 == (\guard#5 ? acopy!0@1#11 : acopy!0@1#5)
+// 32 file array_tiling_tcpy.c line 44 function main
+(88) i!0@1#9 == (\guard#4 ? i!0@1#8 : 1)
+// 32 file array_tiling_tcpy.c line 44 function main
+(89) acopy!0@1#13 == (\guard#4 ? acopy!0@1#12 : acopy!0@1#3)
+// 32 file array_tiling_tcpy.c line 44 function main
+(90) i!0@1#10 == (\guard#3 ? i!0@1#9 : 0)
+// 32 file array_tiling_tcpy.c line 44 function main
+(91) acopy!0@1#14 == (\guard#3 ? acopy!0@1#13 : acopy!0@1#1)
+// 32 file array_tiling_tcpy.c line 44 function main
+(92) i!0@1#11 == 0
+     guard: \guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3
+// 33 file array_tiling_tcpy.c line 44 function main
+(93) ASSERT(\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3 ==> !overflow("*", signed int, 2, S!0@1#2))
+     guard: \guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3
+// 34 file array_tiling_tcpy.c line 44 function main
+// 34 file array_tiling_tcpy.c line 44 function main
+(94) \guard#8 == 2 * S!0@1#2 >= 1
+// 36 file array_tiling_tcpy.c line 45 function main
+(95) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 ==> acopy$array_size!0@1#2 >= 1ul)
+     guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8
+// 38 file array_tiling_tcpy.c line 45 function main
+(96) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 ==> a$array_size!0@1#2 >= 1ul)
+     guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8
+// 39 file array_tiling_tcpy.c line 45 function main
+// 39 file array_tiling_tcpy.c line 45 function main
+// 39 file array_tiling_tcpy.c line 45 function main
+(97) cond!0@1#1 == (acopy!0@1#14[0l] == a!0@1#1[0l] ? 1 : 0)
+     guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8
+// 64 file array_tiling_tcpy.c line 19 function __VERIFIER_assert
+// 64 file array_tiling_tcpy.c line 19 function __VERIFIER_assert
+(98) \guard#9 == (cond!0@1#1 == 0)
+// 65 file array_tiling_tcpy.c line 23 function __VERIFIER_assert
+// 65 file array_tiling_tcpy.c line 23 function __VERIFIER_assert
+// 59 file array_tiling_tcpy.c line 7 function reach_error
+(99) ASSERT(!((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#9))
+     guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#9
+// 60 file array_tiling_tcpy.c line 8 function reach_error
+// 66 file array_tiling_tcpy.c line 24 function __VERIFIER_assert
+// 66 file array_tiling_tcpy.c line 24 function __VERIFIER_assert
+// 57 file <builtin-library-abort> line 6 function abort
+(100) ASSUME(!((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#9))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#9
+// 58 file <builtin-library-abort> line 10 function abort
+// 67 file array_tiling_tcpy.c line 27 function __VERIFIER_assert
+// 41 file array_tiling_tcpy.c line 44 function main
+(101) i!0@1#12 == 1
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8
+// 42 file array_tiling_tcpy.c line 44 function main
+// 33 file array_tiling_tcpy.c line 44 function main
+(102) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 ==> !overflow("*", signed int, 2, S!0@1#2))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8
+// 34 file array_tiling_tcpy.c line 44 function main
+// 34 file array_tiling_tcpy.c line 44 function main
+(103) \guard#10 == 2 * S!0@1#2 >= 2
+// 36 file array_tiling_tcpy.c line 45 function main
+(104) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 ==> acopy$array_size!0@1#2 >= 2ul)
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10
+// 38 file array_tiling_tcpy.c line 45 function main
+(105) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 ==> a$array_size!0@1#2 >= 2ul)
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10
+// 39 file array_tiling_tcpy.c line 45 function main
+// 39 file array_tiling_tcpy.c line 45 function main
+// 39 file array_tiling_tcpy.c line 45 function main
+(106) cond!0@2#1 == (acopy!0@1#14[1l] == a!0@1#1[1l] ? 1 : 0)
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10
+// 64 file array_tiling_tcpy.c line 19 function __VERIFIER_assert
+// 64 file array_tiling_tcpy.c line 19 function __VERIFIER_assert
+(107) \guard#11 == (cond!0@2#1 == 0)
+// 65 file array_tiling_tcpy.c line 23 function __VERIFIER_assert
+// 65 file array_tiling_tcpy.c line 23 function __VERIFIER_assert
+// 59 file array_tiling_tcpy.c line 7 function reach_error
+(108) ASSERT(!((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#11))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#11
+// 60 file array_tiling_tcpy.c line 8 function reach_error
+// 66 file array_tiling_tcpy.c line 24 function __VERIFIER_assert
+// 66 file array_tiling_tcpy.c line 24 function __VERIFIER_assert
+// 57 file <builtin-library-abort> line 6 function abort
+(109) ASSUME(!((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#11))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#11
+// 58 file <builtin-library-abort> line 10 function abort
+// 67 file array_tiling_tcpy.c line 27 function __VERIFIER_assert
+// 41 file array_tiling_tcpy.c line 44 function main
+(110) i!0@1#13 == 2
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10
+// 42 file array_tiling_tcpy.c line 44 function main
+// 33 file array_tiling_tcpy.c line 44 function main
+(111) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 ==> !overflow("*", signed int, 2, S!0@1#2))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10
+// 34 file array_tiling_tcpy.c line 44 function main
+// 34 file array_tiling_tcpy.c line 44 function main
+(112) \guard#12 == 2 * S!0@1#2 >= 3
+// 36 file array_tiling_tcpy.c line 45 function main
+(113) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 ==> acopy$array_size!0@1#2 >= 3ul)
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12
+// 38 file array_tiling_tcpy.c line 45 function main
+(114) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 ==> a$array_size!0@1#2 >= 3ul)
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12
+// 39 file array_tiling_tcpy.c line 45 function main
+// 39 file array_tiling_tcpy.c line 45 function main
+// 39 file array_tiling_tcpy.c line 45 function main
+(115) cond!0@3#1 == (acopy!0@1#14[2l] == a!0@1#1[2l] ? 1 : 0)
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12
+// 64 file array_tiling_tcpy.c line 19 function __VERIFIER_assert
+// 64 file array_tiling_tcpy.c line 19 function __VERIFIER_assert
+(116) \guard#13 == (cond!0@3#1 == 0)
+// 65 file array_tiling_tcpy.c line 23 function __VERIFIER_assert
+// 65 file array_tiling_tcpy.c line 23 function __VERIFIER_assert
+// 59 file array_tiling_tcpy.c line 7 function reach_error
+(117) ASSERT(!((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#13))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#13
+// 60 file array_tiling_tcpy.c line 8 function reach_error
+// 66 file array_tiling_tcpy.c line 24 function __VERIFIER_assert
+// 66 file array_tiling_tcpy.c line 24 function __VERIFIER_assert
+// 57 file <builtin-library-abort> line 6 function abort
+(118) ASSUME(!((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#13))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#13
+// 58 file <builtin-library-abort> line 10 function abort
+// 67 file array_tiling_tcpy.c line 27 function __VERIFIER_assert
+// 41 file array_tiling_tcpy.c line 44 function main
+(119) i!0@1#14 == 3
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12
+// 42 file array_tiling_tcpy.c line 44 function main
+// 33 file array_tiling_tcpy.c line 44 function main
+(120) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 ==> !overflow("*", signed int, 2, S!0@1#2))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12
+// 34 file array_tiling_tcpy.c line 44 function main
+// 34 file array_tiling_tcpy.c line 44 function main
+(121) \guard#14 == 2 * S!0@1#2 >= 4
+// 36 file array_tiling_tcpy.c line 45 function main
+(122) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 ==> acopy$array_size!0@1#2 >= 4ul)
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14
+// 38 file array_tiling_tcpy.c line 45 function main
+(123) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 ==> a$array_size!0@1#2 >= 4ul)
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14
+// 39 file array_tiling_tcpy.c line 45 function main
+// 39 file array_tiling_tcpy.c line 45 function main
+// 39 file array_tiling_tcpy.c line 45 function main
+(124) cond!0@4#1 == (acopy!0@1#14[3l] == a!0@1#1[3l] ? 1 : 0)
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14
+// 64 file array_tiling_tcpy.c line 19 function __VERIFIER_assert
+// 64 file array_tiling_tcpy.c line 19 function __VERIFIER_assert
+(125) \guard#15 == (cond!0@4#1 == 0)
+// 65 file array_tiling_tcpy.c line 23 function __VERIFIER_assert
+// 65 file array_tiling_tcpy.c line 23 function __VERIFIER_assert
+// 59 file array_tiling_tcpy.c line 7 function reach_error
+(126) ASSERT(!((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#15))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#15
+// 60 file array_tiling_tcpy.c line 8 function reach_error
+// 66 file array_tiling_tcpy.c line 24 function __VERIFIER_assert
+// 66 file array_tiling_tcpy.c line 24 function __VERIFIER_assert
+// 57 file <builtin-library-abort> line 6 function abort
+(127) ASSUME(!((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#15))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#15
+// 58 file <builtin-library-abort> line 10 function abort
+// 67 file array_tiling_tcpy.c line 27 function __VERIFIER_assert
+// 41 file array_tiling_tcpy.c line 44 function main
+(128) i!0@1#15 == 4
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14
+// 42 file array_tiling_tcpy.c line 44 function main
+// 33 file array_tiling_tcpy.c line 44 function main
+(129) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 ==> !overflow("*", signed int, 2, S!0@1#2))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14
+// 34 file array_tiling_tcpy.c line 44 function main
+// 34 file array_tiling_tcpy.c line 44 function main
+(130) \guard#16 == 2 * S!0@1#2 >= 5
+// 36 file array_tiling_tcpy.c line 45 function main
+(131) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 ==> acopy$array_size!0@1#2 >= 5ul)
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16
+// 38 file array_tiling_tcpy.c line 45 function main
+(132) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 ==> a$array_size!0@1#2 >= 5ul)
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16
+// 39 file array_tiling_tcpy.c line 45 function main
+// 39 file array_tiling_tcpy.c line 45 function main
+// 39 file array_tiling_tcpy.c line 45 function main
+(133) cond!0@5#1 == (acopy!0@1#14[4l] == a!0@1#1[4l] ? 1 : 0)
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16
+// 64 file array_tiling_tcpy.c line 19 function __VERIFIER_assert
+// 64 file array_tiling_tcpy.c line 19 function __VERIFIER_assert
+(134) \guard#17 == (cond!0@5#1 == 0)
+// 65 file array_tiling_tcpy.c line 23 function __VERIFIER_assert
+// 65 file array_tiling_tcpy.c line 23 function __VERIFIER_assert
+// 59 file array_tiling_tcpy.c line 7 function reach_error
+(135) ASSERT(!((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#17))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#17
+// 60 file array_tiling_tcpy.c line 8 function reach_error
+// 66 file array_tiling_tcpy.c line 24 function __VERIFIER_assert
+// 66 file array_tiling_tcpy.c line 24 function __VERIFIER_assert
+// 57 file <builtin-library-abort> line 6 function abort
+(136) ASSUME(!((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#17))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#17
+// 58 file <builtin-library-abort> line 10 function abort
+// 67 file array_tiling_tcpy.c line 27 function __VERIFIER_assert
+// 41 file array_tiling_tcpy.c line 44 function main
+(137) i!0@1#16 == 5
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16
+// 42 file array_tiling_tcpy.c line 44 function main
+// 33 file array_tiling_tcpy.c line 44 function main
+(138) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 ==> !overflow("*", signed int, 2, S!0@1#2))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16
+// 34 file array_tiling_tcpy.c line 44 function main
+// 34 file array_tiling_tcpy.c line 44 function main
+(139) \guard#18 == 2 * S!0@1#2 >= 6
+// 36 file array_tiling_tcpy.c line 45 function main
+(140) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#18 ==> acopy$array_size!0@1#2 >= 6ul)
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#18
+// 38 file array_tiling_tcpy.c line 45 function main
+(141) ASSERT((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#18 ==> a$array_size!0@1#2 >= 6ul)
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#18
+// 39 file array_tiling_tcpy.c line 45 function main
+// 39 file array_tiling_tcpy.c line 45 function main
+// 39 file array_tiling_tcpy.c line 45 function main
+(142) cond!0@6#1 == (acopy!0@1#14[5l] == a!0@1#1[5l] ? 1 : 0)
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#18
+// 64 file array_tiling_tcpy.c line 19 function __VERIFIER_assert
+// 64 file array_tiling_tcpy.c line 19 function __VERIFIER_assert
+(143) \guard#19 == (cond!0@6#1 == 0)
+// 65 file array_tiling_tcpy.c line 23 function __VERIFIER_assert
+// 65 file array_tiling_tcpy.c line 23 function __VERIFIER_assert
+// 59 file array_tiling_tcpy.c line 7 function reach_error
+(144) ASSERT(!((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#18 && \guard#19))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#18 && \guard#19
+// 60 file array_tiling_tcpy.c line 8 function reach_error
+// 66 file array_tiling_tcpy.c line 24 function __VERIFIER_assert
+(sliced) ASSUME(!((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#18 && \guard#19))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#18 && \guard#19
+// 67 file array_tiling_tcpy.c line 27 function __VERIFIER_assert
+// 41 file array_tiling_tcpy.c line 44 function main
+(sliced) i!0@1#17 == 6
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#18
+// 42 file array_tiling_tcpy.c line 44 function main
+(sliced) ASSUME(!((\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#18))
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && \guard#8 && \guard#10 && \guard#12 && \guard#14 && \guard#16 && \guard#18
+// 43 file array_tiling_tcpy.c line 46 function main
+(sliced) i!0@1#18 == (\guard#16 ? 5 : 4)
+// 43 file array_tiling_tcpy.c line 46 function main
+(sliced) i!0@1#19 == (\guard#14 ? i!0@1#18 : 3)
+// 43 file array_tiling_tcpy.c line 46 function main
+(sliced) i!0@1#20 == (\guard#12 ? i!0@1#19 : 2)
+// 43 file array_tiling_tcpy.c line 46 function main
+(sliced) i!0@1#21 == (\guard#10 ? i!0@1#20 : 1)
+// 43 file array_tiling_tcpy.c line 46 function main
+(sliced) i!0@1#22 == (\guard#8 ? i!0@1#21 : 0)
+// 43 file array_tiling_tcpy.c line 46 function main
+(sliced) main!0#1 == 0
+      guard: (\guard#3 && (\guard#4 && (\guard#5 && (\guard#6 && !\guard#7 || !\guard#6) || !\guard#5) || !\guard#4) || !\guard#3) && (\guard#8 && (\guard#10 && (\guard#12 && (\guard#14 && (\guard#16 && !\guard#18 || !\guard#16) || !\guard#14) || !\guard#12) || !\guard#10) || !\guard#8)
+// 50 file array_tiling_tcpy.c line 47 function main
+// 69 file array_tiling_tcpy.c line 29
+(sliced) return'!0#1 == 0
+// 70 file array_tiling_tcpy.c line 29
+// 71 
