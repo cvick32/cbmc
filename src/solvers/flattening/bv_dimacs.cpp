@@ -11,6 +11,8 @@ Author: Daniel Kroening, kroening@kroening.com
 
 #include "bv_dimacs.h"
 
+#include <util/bitvector_types.h>
+
 #include <solvers/sat/dimacs_cnf.h>
 
 #include <fstream> // IWYU pragma: keep
@@ -75,6 +77,15 @@ bool bv_dimacst::write_dimacs(std::ostream &out)
         out << (lit.is_true() ? "TRUE" : "FALSE");
       else
         out << lit.dimacs();
+    }
+
+    // Add type information
+    out << " @type=" << m.second.type.id();
+    if(
+      m.second.type.id() == ID_signedbv ||
+      m.second.type.id() == ID_unsignedbv)
+    {
+      out << "[" << to_bitvector_type(m.second.type).get_width() << "]";
     }
 
     out << "\n";

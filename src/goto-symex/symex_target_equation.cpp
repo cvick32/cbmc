@@ -16,6 +16,7 @@ Author: Daniel Kroening, kroening@kroening.com
 
 #include "solver_hardness.h"
 #include "ssa_step.h"
+#include "ssa_step_tracker.h"
 
 #include <chrono> // IWYU pragma: keep
 
@@ -371,6 +372,7 @@ void symex_target_equationt::convert_assignments(
         mstream << messaget::eom;
       });
 
+      ssa_step_trackert::current_step_index = step_index;
       decision_procedure.set_to_true(step.cond_expr);
       step.converted = true;
       with_solver_hardness(
@@ -390,6 +392,7 @@ void symex_target_equationt::convert_decls(
     {
       // The result is not used, these have no impact on
       // the satisfiability of the formula.
+      ssa_step_trackert::current_step_index = step_index;
       decision_procedure.handle(step.cond_expr);
       decision_procedure.handle(
         equal_exprt{step.ssa_full_lhs, step.ssa_full_lhs});
@@ -416,6 +419,7 @@ void symex_target_equationt::convert_guards(
         mstream << messaget::eom;
       });
 
+      ssa_step_trackert::current_step_index = step_index;
       step.guard_handle = decision_procedure.handle(step.guard);
       with_solver_hardness(
         decision_procedure, [step_index, &step](solver_hardnesst &hardness) {
@@ -444,6 +448,7 @@ void symex_target_equationt::convert_assumptions(
             mstream << messaget::eom;
           });
 
+        ssa_step_trackert::current_step_index = step_index;
         step.cond_handle = decision_procedure.handle(step.cond_expr);
 
         with_solver_hardness(
@@ -472,6 +477,7 @@ void symex_target_equationt::convert_goto_instructions(
             mstream << messaget::eom;
           });
 
+        ssa_step_trackert::current_step_index = step_index;
         step.cond_handle = decision_procedure.handle(step.cond_expr);
         with_solver_hardness(
           decision_procedure, hardness_register_ssa(step_index, step));
@@ -494,6 +500,7 @@ void symex_target_equationt::convert_constraints(
         mstream << messaget::eom;
       });
 
+      ssa_step_trackert::current_step_index = step_index;
       decision_procedure.set_to_true(step.cond_expr);
       step.converted = true;
 
@@ -528,6 +535,7 @@ void symex_target_equationt::convert_assertions(
       if(step.is_assert() && !step.ignore && !step.converted)
       {
         step.converted = true;
+        ssa_step_trackert::current_step_index = step_index;
         decision_procedure.set_to_false(step.cond_expr);
         step.cond_handle = false_exprt();
 
@@ -537,6 +545,7 @@ void symex_target_equationt::convert_assertions(
       }
       else if(step.is_assume())
       {
+        ssa_step_trackert::current_step_index = step_index;
         decision_procedure.set_to_true(step.cond_expr);
 
         with_solver_hardness(
@@ -557,6 +566,7 @@ void symex_target_equationt::convert_assertions(
 
   std::vector<goto_programt::const_targett> involved_steps;
 
+  std::size_t step_index = 0;
   for(auto &step : SSA_steps)
   {
     // hide already converted assertions in the error trace
@@ -577,6 +587,7 @@ void symex_target_equationt::convert_assertions(
         step.cond_expr);
 
       // do the conversion
+      ssa_step_trackert::current_step_index = step_index;
       step.cond_handle = decision_procedure.handle(implication);
 
       with_solver_hardness(
@@ -603,6 +614,7 @@ void symex_target_equationt::convert_assertions(
           involved_steps.push_back(step.source.pc);
         });
     }
+    ++step_index;
   }
 
   const auto assertion_disjunction = disjunction(disjuncts);
@@ -640,6 +652,7 @@ void symex_target_equationt::convert_function_calls(
           equal_exprt eq(arg, symbol);
           merge_irep(eq);
 
+          ssa_step_trackert::current_step_index = step_index;
           decision_procedure.set_to(eq, true);
           conjuncts.push_back(eq);
           step.converted_function_arguments.push_back(symbol);
@@ -678,6 +691,7 @@ void symex_target_equationt::convert_io(decision_proceduret &decision_procedure)
           equal_exprt eq(arg, symbol);
           merge_irep(eq);
 
+          ssa_step_trackert::current_step_index = step_index;
           decision_procedure.set_to(eq, true);
           conjuncts.push_back(eq);
           step.converted_io_args.push_back(symbol);

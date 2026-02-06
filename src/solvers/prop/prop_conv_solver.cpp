@@ -10,8 +10,11 @@ Author: Daniel Kroening, kroening@kroening.com
 
 #include "literal_expr.h"
 
+#include <goto-symex/ssa_step_tracker.h>
+
 #include <algorithm>
 #include <chrono> // IWYU pragma: keep
+#include <iostream>
 
 bool prop_conv_solvert::is_in_conflict(const exprt &expr) const
 {
@@ -78,11 +81,11 @@ std::optional<bool> prop_conv_solvert::get_bool(const exprt &expr) const
 {
   // trivial cases
 
-  if(expr == true)
+  if(expr.is_true())
   {
     return true;
   }
-  else if(expr == false)
+  else if(expr.is_false())
   {
     return false;
   }
@@ -180,8 +183,9 @@ literalt prop_conv_solvert::convert(const exprt &expr)
   if(freeze_all && !literal.is_constant())
     prop.set_frozen(literal);
 
-#if 0
-  std::cout << literal << "=" << expr << '\n';
+#if 1
+  std::cerr << "@step=" << ssa_step_trackert::current_step_index
+            << " " << literal << "=" << expr.pretty() << '\n';
 #endif
 
   return literal;
@@ -195,12 +199,12 @@ literalt prop_conv_solvert::convert_bool(const exprt &expr)
 
   if(expr.is_constant())
   {
-    if(expr == true)
+    if(expr.is_true())
       return const_literal(true);
     else
     {
       INVARIANT(
-        expr == false,
+        expr.is_false(),
         "constant expression of type bool should be either true or false");
       return const_literal(false);
     }
@@ -443,56 +447,44 @@ void prop_conv_solvert::finish_eager_conversion()
 decision_proceduret::resultt
 prop_conv_solvert::dec_solve(const exprt &assumption)
 {
-  try
+  // post-processing isn't incremental yet
+  if(!post_processing_done)
   {
-    // post-processing isn't incremental yet
-    if(!post_processing_done)
-    {
-      const auto post_process_start = std::chrono::steady_clock::now();
+    const auto post_process_start = std::chrono::steady_clock::now();
 
-      log.progress() << "Post-processing" << messaget::eom;
-      finish_eager_conversion();
-      post_processing_done = true;
+    log.progress() << "Post-processing" << messaget::eom;
+    finish_eager_conversion();
+    post_processing_done = true;
 
-      const auto post_process_stop = std::chrono::steady_clock::now();
-      std::chrono::duration<double> post_process_runtime =
-        std::chrono::duration<double>(post_process_stop - post_process_start);
-      log.statistics() << "Runtime Post-process: "
-                       << post_process_runtime.count() << "s" << messaget::eom;
-    }
-
-    log.progress() << "Solving with " << prop.solver_text() << messaget::eom;
-
-    if(assumption.is_nil())
-      push();
-    else
-      push({assumption});
-
-    auto prop_result = prop.prop_solve(assumption_stack);
-
-    pop();
-
-    switch(prop_result)
-    {
-    case propt::resultt::P_SATISFIABLE:
-      return resultt::D_SATISFIABLE;
-    case propt::resultt::P_UNSATISFIABLE:
-      return resultt::D_UNSATISFIABLE;
-    case propt::resultt::P_ERROR:
-      return resultt::D_ERROR;
-    }
-
-    UNREACHABLE;
+    const auto post_process_stop = std::chrono::steady_clock::now();
+    std::chrono::duration<double> post_process_runtime =
+      std::chrono::duration<double>(post_process_stop - post_process_start);
+    log.statistics() << "Runtime Post-process: " << post_process_runtime.count()
+                     << "s" << messaget::eom;
   }
-  catch(const std::bad_alloc &)
+
+  log.progress() << "Solving with " << prop.solver_text() << messaget::eom;
+
+  if(assumption.is_nil())
+    push();
+  else
+    push({assumption});
+
+  auto prop_result = prop.prop_solve(assumption_stack);
+
+  pop();
+
+  switch(prop_result)
   {
-    log.error() << "Solver ran out of memory during propositional reduction."
-                << messaget::eom;
-    log.error()
-      << "Try reducing the problem size or increasing available memory."
-      << messaget::eom;
+  case propt::resultt::P_SATISFIABLE:
+    return resultt::D_SATISFIABLE;
+  case propt::resultt::P_UNSATISFIABLE:
+    return resultt::D_UNSATISFIABLE;
+  case propt::resultt::P_ERROR:
     return resultt::D_ERROR;
   }
+
+  UNREACHABLE;
 }
 
 exprt prop_conv_solvert::get(const exprt &expr) const

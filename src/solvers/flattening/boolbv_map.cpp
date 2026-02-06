@@ -10,11 +10,11 @@ Author: Daniel Kroening, kroening@kroening.com
 
 #include <util/threeval.h>
 
+#include <goto-symex/ssa_step_tracker.h>
+
 #include <solvers/prop/prop.h>
 
-#ifdef DEBUG
 #include <iostream>
-#endif
 
 std::string boolbv_mapt::map_entryt::get_value(const propt &prop) const
 {
@@ -58,10 +58,9 @@ const bvt &boolbv_mapt::get_literals(
     {
       map_entry.literal_map.push_back(prop.new_variable());
 
-#ifdef DEBUG
-      std::cout << "NEW: " << identifier << ":" << bit << "="
+      std::cerr << "NEW: @step=" << ssa_step_trackert::current_step_index
+                << " " << identifier << ":" << bit << "="
                 << map_entry.literal_map.back() << '\n';
-#endif
     }
   }
 
