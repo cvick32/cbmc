@@ -21,6 +21,13 @@ src/goto-analyzer/taint_driver_scripts/.idea/*
 Debug/*
 Release/*
 
+# sat-exp files
+
+*.cnf
+sat_output.txt
+assignment.txt
+debug.log
+
 # compilation files
 *.lo
 *.od
