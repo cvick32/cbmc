@@ -192,6 +192,9 @@ literalt cnft::land(const bvt &bv)
   lits.push_back(pos(literal));
   lcnf(lits);
 
+  // Record Tseitin metadata
+  tseitin_map[literal] = {gate_typet::AND, new_bv};
+
   return literal;
 }
 
@@ -235,6 +238,9 @@ literalt cnft::lor(const bvt &bv)
   lits.push_back(neg(literal));
   lcnf(lits);
 
+  // Record Tseitin metadata
+  tseitin_map[literal] = {gate_typet::OR, new_bv};
+
   return literal;
 }
 
@@ -271,6 +277,10 @@ literalt cnft::land(literalt a, literalt b)
 
   literalt o=new_variable();
   gate_and(a, b, o);
+
+  // Record Tseitin metadata
+  tseitin_map[o] = {gate_typet::AND, {a, b}};
+
   return o;
 }
 
@@ -287,6 +297,10 @@ literalt cnft::lor(literalt a, literalt b)
 
   literalt o=new_variable();
   gate_or(a, b, o);
+
+  // Record Tseitin metadata
+  tseitin_map[o] = {gate_typet::OR, {a, b}};
+
   return o;
 }
 
@@ -309,6 +323,10 @@ literalt cnft::lxor(literalt a, literalt b)
 
   literalt o=new_variable();
   gate_xor(a, b, o);
+
+  // Record Tseitin metadata
+  tseitin_map[o] = {gate_typet::XOR, {a, b}};
+
   return o;
 }
 
@@ -372,6 +390,9 @@ literalt cnft::lselect(literalt a, literalt b, literalt c)
   lcnf(b,  c, !o);
   lcnf(!b, !c,  o);
   #endif
+
+  // Record Tseitin metadata (ITE: if a then b else c)
+  tseitin_map[o] = {gate_typet::ITE, {a, b, c}};
 
   return o;
 
@@ -496,4 +517,27 @@ bool cnft::process_clause(const bvt &bv, bvt &dest) const
   }
 
   return false;
+}
+
+void cnft::register_auxiliary_var(
+  literalt lit,
+  const std::string &type,
+  const bvt &related_vars)
+{
+  gate_typet gate_type;
+
+  if(type == "CMP_CHAIN")
+    gate_type = gate_typet::CMP_CHAIN;
+  else if(type == "CMP_RESULT")
+    gate_type = gate_typet::CMP_RESULT;
+  else if(type == "CARRY")
+    gate_type = gate_typet::CARRY;
+  else if(type == "SUM")
+    gate_type = gate_typet::SUM;
+  else if(type == "DIVIDER")
+    gate_type = gate_typet::DIVIDER;
+  else
+    return; // unknown type, don't track
+
+  tseitin_map[lit] = {gate_type, related_vars};
 }

@@ -12,6 +12,9 @@ Author: Daniel Kroening, kroening@kroening.com
 #ifndef CPROVER_SOLVERS_SAT_CNF_H
 #define CPROVER_SOLVERS_SAT_CNF_H
 
+#include <map>
+#include <vector>
+
 #include <solvers/prop/prop.h>
 
 class cnft:public propt
@@ -51,7 +54,41 @@ public:
   void gate_equal(literalt a, literalt b, literalt o);
   void gate_implies(literalt a, literalt b, literalt o);
 
+  // Tseitin and auxiliary variable tracking
+  enum class gate_typet
+  {
+    AND,
+    OR,
+    XOR,
+    ITE,
+    // Auxiliary variable types from bv_utils
+    CMP_CHAIN,   // comparison chain variable
+    CMP_RESULT,  // comparison result variable
+    CARRY,       // adder carry output
+    SUM,         // adder sum output
+    DIVIDER      // divider auxiliary variable
+  };
+
+  struct tseitin_entryt
+  {
+    gate_typet gate_type;
+    std::vector<literalt> inputs; // varies by type
+  };
+
+  using tseitin_mapt = std::map<literalt, tseitin_entryt>;
+  const tseitin_mapt &get_tseitin_map() const
+  {
+    return tseitin_map;
+  }
+
+  // Override to store auxiliary variable metadata
+  void register_auxiliary_var(
+    literalt lit,
+    const std::string &type,
+    const bvt &related_vars = {}) override;
+
 protected:
+  tseitin_mapt tseitin_map;
   static bvt eliminate_duplicates(const bvt &);
 
   size_t _no_variables;

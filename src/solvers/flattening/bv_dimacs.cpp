@@ -91,5 +91,50 @@ bool bv_dimacst::write_dimacs(std::ostream &out)
     out << "\n";
   }
 
+  // Dump Tseitin variable mappings
+  for(const auto &entry : dimacs_cnf_prop.get_tseitin_map())
+  {
+    const literalt &lit = entry.first;
+    const cnft::tseitin_entryt &tseitin = entry.second;
+
+    out << "c @tseitin " << lit.var_no();
+
+    switch(tseitin.gate_type)
+    {
+    case cnft::gate_typet::AND:
+      out << " AND";
+      break;
+    case cnft::gate_typet::OR:
+      out << " OR";
+      break;
+    case cnft::gate_typet::XOR:
+      out << " XOR";
+      break;
+    case cnft::gate_typet::ITE:
+      out << " ITE";
+      break;
+    case cnft::gate_typet::CMP_CHAIN:
+      out << " CMP_CHAIN";
+      break;
+    case cnft::gate_typet::CMP_RESULT:
+      out << " CMP_RESULT";
+      break;
+    case cnft::gate_typet::CARRY:
+      out << " CARRY";
+      break;
+    case cnft::gate_typet::SUM:
+      out << " SUM";
+      break;
+    case cnft::gate_typet::DIVIDER:
+      out << " DIVIDER";
+      break;
+    }
+
+    for(const auto &input : tseitin.inputs)
+      out << " " << input.dimacs();
+
+    out << "\n";
+  }
+
   return false;
 }
