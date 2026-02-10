@@ -199,3 +199,151 @@ grep "^c " program.cnf | head -20
 | `examples/interpret_sat_assignment.py` | SAT assignment interpreter |
 | `examples/sat_demo/simple_sat.c` | Simple test program |
 | `examples/sat_demo/progress.md` | This documentation |
+
+---
+
+## 4. Tseitin Variable Tracking
+
+### Background
+
+During CNF conversion, CBMC creates auxiliary "Tseitin" variables to encode boolean gates (AND, OR, XOR, ITE). Previously, these variables appeared in the DIMACS output without any semantic labels, making it difficult to correlate SAT solver activity scores with program semantics.
+
+### Changes Made
+
+#### `src/solvers/sat/cnf.h`
+
+Added Tseitin tracking infrastructure to the `cnft` class:
+
+```cpp
+// Gate type enumeration
+enum class gate_typet { AND, OR, XOR, ITE };
+
+// Metadata for each Tseitin variable
+struct tseitin_entryt {
+  gate_typet gate_type;
+  std::vector<literalt> inputs;  // 2 inputs for AND/OR/XOR, 3 for ITE
+};
+
+// Map from output literal to gate metadata
+using tseitin_mapt = std::map<literalt, tseitin_entryt>;
+const tseitin_mapt& get_tseitin_map() const { return tseitin_map; }
+
+protected:
+  tseitin_mapt tseitin_map;
+```
+
+#### `src/solvers/sat/cnf.cpp`
+
+Modified gate functions to record Tseitin metadata:
+
+- `land(literalt a, literalt b)` - records AND gate with 2 inputs
+- `land(const bvt &bv)` - records AND gate with N inputs
+- `lor(literalt a, literalt b)` - records OR gate with 2 inputs
+- `lor(const bvt &bv)` - records OR gate with N inputs
+- `lxor(literalt a, literalt b)` - records XOR gate with 2 inputs
+- `lselect(literalt a, literalt b, literalt c)` - records ITE gate with 3 inputs
+
+Example addition to `land()`:
+```cpp
+literalt o = new_variable();
+gate_and(a, b, o);
+tseitin_map[o] = {gate_typet::AND, {a, b}};  // NEW
+return o;
+```
+
+#### `src/solvers/flattening/bv_dimacs.cpp`
+
+Added output of `@tseitin` comments after program variable mappings:
+
+```cpp
+// Dump Tseitin variable mappings
+for(const auto &entry : dimacs_cnf_prop.get_tseitin_map())
+{
+  out << "c @tseitin " << lit.var_no();
+  switch(tseitin.gate_type) {
+    case cnft::gate_typet::AND: out << " AND"; break;
+    case cnft::gate_typet::OR:  out << " OR"; break;
+    case cnft::gate_typet::XOR: out << " XOR"; break;
+    case cnft::gate_typet::ITE: out << " ITE"; break;
+  }
+  for(const auto &input : tseitin.inputs)
+    out << " " << input.dimacs();
+  out << "\n";
+}
+```
+
+### DIMACS Output Format
+
+```
+c @tseitin 513 AND 1 2           # var 513 = AND(var 1, var 2)
+c @tseitin 514 OR 513 3          # var 514 = OR(var 513, var 3)
+c @tseitin 515 XOR 10 11         # var 515 = XOR(var 10, var 11)
+c @tseitin 516 ITE 5 6 7         # var 516 = IF var5 THEN var6 ELSE var7
+c @tseitin 517 AND -1 -2 -3 -4   # var 517 = AND(NOT 1, NOT 2, NOT 3, NOT 4)
+```
+
+Input literals use DIMACS sign convention: negative means negated.
+
+### Script Updates
+
+#### `examples/interpret_sat_assignment.py`
+
+Added parsing for `@tseitin` comments:
+
+```python
+@dataclass
+class TseitinMapping:
+    var_no: int           # The DIMACS variable number
+    gate_type: str        # AND, OR, XOR, ITE
+    inputs: List[int]     # Input literals (signed, negative means negated)
+```
+
+New/updated command-line options:
+
+- `--coverage` - Now shows separate counts for program vars vs Tseitin vars
+- `--var-table` - CSV now includes gate type and inputs for Tseitin vars
+
+**Example coverage output:**
+```
+Total CNF variables:    579
+Total CNF clauses:      69
+Mapped program vars:    545
+Mapped Tseitin vars:    2
+Total mapped vars:      547
+Unmapped CNF variables: 32
+Coverage:               94.5%
+```
+
+**Example var-table CSV output:**
+```
+cnf_var,bit_index,program_var,type,gate_inputs
+1,0,main::i#1,signedbv[32],
+...
+577,-1,<XOR>,tseitin,544 545
+578,-1,<AND>,tseitin,-546 -547 -548 ...
+```
+
+### Usage
+
+```bash
+# Generate DIMACS with Tseitin tracking
+./build/bin/cbmc program.c --dimacs --outfile program.cnf
+
+# Check Tseitin comments
+grep '@tseitin' program.cnf
+
+# View coverage including Tseitin vars
+python3 examples/interpret_sat_assignment.py program.cnf sat_output.txt --coverage
+
+# Generate CSV lookup table with Tseitin entries
+python3 examples/interpret_sat_assignment.py program.cnf sat_output.txt --var-table
+```
+
+### Limitations
+
+Not all auxiliary variables are tracked. Variables created through:
+- Direct clause generation (bypassing `land`/`lor`/`lxor`/`lselect`)
+- Lower-level encoding functions
+- Comparison and arithmetic operations
+
+These will appear as "unmapped" in coverage reports. The current implementation tracks the high-level boolean gate operations which account for most Tseitin variables in typical verification tasks.
