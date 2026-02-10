@@ -325,6 +325,9 @@ cnf_var,bit_index,program_var,type,gate_inputs
 
 ### Usage
 
+Using `run.sh` assumes you have cbmc-instrument on your $PATH. It takes a C
+program as its first argument and a supported SAT solver as its second argument.
+
 ```bash
 # Generate DIMACS with Tseitin tracking
 ./build/bin/cbmc program.c --dimacs --outfile program.cnf
