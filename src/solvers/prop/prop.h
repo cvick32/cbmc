@@ -96,6 +96,15 @@ public:
   virtual size_t no_variables() const=0;
   virtual bvt new_variables(std::size_t width);
 
+  // Auxiliary variable tracking for analysis
+  // Types: "CMP_CHAIN", "CMP_RESULT", "CARRY", "SUM", "DIVIDER"
+  virtual void register_auxiliary_var(
+    literalt /*lit*/,
+    const std::string & /*type*/,
+    const bvt & /*related_vars*/ = {})
+  {
+  }
+
   // solving
   virtual std::string solver_text() const = 0;
   enum class resultt { P_SATISFIABLE, P_UNSATISFIABLE, P_ERROR };

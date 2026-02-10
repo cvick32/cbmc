@@ -189,6 +189,9 @@ literalt bv_utilst::full_adder(
     {
       carry_out = prop.new_variable();
       sum = prop.new_variable();
+      // Track adder auxiliary variables
+      prop.register_auxiliary_var(carry_out, "CARRY", {a, b, carry_in});
+      prop.register_auxiliary_var(sum, "SUM", {a, b, carry_in});
 
       // Any two inputs 1 will set the carry_out to 1
       prop.lcnf(!a,        !b, carry_out);
@@ -1426,6 +1429,9 @@ literalt bv_utilst::lt_or_le(
         bv0.size() >= 2, "signed bitvectors should have at least two bits");
       // 1 if a compare is needed below this bit
       bvt compareBelow = prop.new_variables(bv0.size() - 1);
+      // Track comparison chain variables
+      for(const auto &lit : compareBelow)
+        prop.register_auxiliary_var(lit, "CMP_CHAIN", bv0);
       size_t start = compareBelow.size() - 1;
 
       literalt &firstComp = compareBelow[start];
@@ -1439,6 +1445,8 @@ literalt bv_utilst::lt_or_le(
         firstComp = top0;
 
       literalt result = prop.new_variable();
+      // Track comparison result variable
+      prop.register_auxiliary_var(result, "CMP_RESULT", bv0);
 
       // When comparing signs we are comparing the top bit
       // Four cases...
@@ -1530,8 +1538,13 @@ literalt bv_utilst::lt_or_le(
             same_prefix = false;
             start = i;
             compareBelow = prop.new_variables(i);
+            // Track comparison chain variables
+            for(const auto &lit : compareBelow)
+              prop.register_auxiliary_var(lit, "CMP_CHAIN", bv0);
             compareBelow.push_back(const_literal(true));
             result = prop.new_variable();
+            // Track comparison result variable
+            prop.register_auxiliary_var(result, "CMP_RESULT", bv0);
           }
         }
 
