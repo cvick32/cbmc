@@ -3,23 +3,40 @@
 Interpret a SAT solver's satisfying assignment in terms of the original
 C program variables using CBMC's DIMACS mapping comments.
 
+Supports multiple SAT solver output formats:
+  - Kissat: Uses 's SATISFIABLE' and 'v' prefixed assignment lines
+  - CaDiCaL: Same format as Kissat
+  - MiniSat/Glucose: Uses 'SAT' line followed by literals (no 'v' prefix)
+  - Plain: Space-separated literals ending with 0
+
 Usage:
-    python interpret_sat_assignment.py <dimacs_file> <assignment_file>
+    python interpret_sat_assignment.py <dimacs_file> <assignment_file> [options]
 
-The assignment file should contain space-separated literals (positive = true, negative = false),
-ending with 0, as output by most SAT solvers (e.g., MiniSat, CaDiCaL).
+Options:
+    --solver {auto,kissat,cadical,minisat,glucose,plain}
+                        SAT solver format (default: auto-detect)
+    --all               Show CPROVER internal variables
+    --filter PATTERN    Only show variables matching pattern
+    --show-cnf-vars     Show CNF variable numbers for each decoded variable
+    --coverage          Show summary of CNF variable coverage
+    --unmapped          List all unmapped CNF variable numbers
+    --var-table         Output CSV lookup table: CNF_var -> program_var (for activity score correlation)
 
-Example assignment file content:
-    1 -2 3 4 -5 6 ... 0
+Examples:
+    # Auto-detect solver format
+    python interpret_sat_assignment.py program.cnf sat_output.txt
 
-Or the "v" lines from SAT solver output:
-    v 1 -2 3 4 -5 6 ...
-    v 7 8 -9 ...
-    v 0
+    # Specify Kissat format
+    python interpret_sat_assignment.py program.cnf sat_output.txt --solver kissat
+
+    # Filter to only show variable 'x'
+    python interpret_sat_assignment.py program.cnf sat_output.txt --filter x
 """
 
 import sys
 import re
+import argparse
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
@@ -34,6 +51,269 @@ class VariableMapping:
     is_signed: Optional[bool] = None
 
 
+@dataclass
+class TseitinMapping:
+    """Mapping for a Tseitin auxiliary variable."""
+    var_no: int           # The DIMACS variable number
+    gate_type: str        # AND, OR, XOR, ITE
+    inputs: List[int]     # Input literals (signed, negative means negated)
+
+
+# =============================================================================
+# SAT Solver Output Parsers
+# =============================================================================
+
+class SolverParser(ABC):
+    """Abstract base class for SAT solver output parsers."""
+
+    name: str = "unknown"
+
+    @abstractmethod
+    def parse(self, content: str) -> Tuple[Optional[str], Dict[int, bool]]:
+        """
+        Parse solver output and return (status, assignment).
+
+        Returns:
+            status: "SATISFIABLE", "UNSATISFIABLE", or None if unknown
+            assignment: Dict mapping variable number to True/False
+        """
+        pass
+
+    @staticmethod
+    def _parse_literals(literals: List[str]) -> Dict[int, bool]:
+        """Parse a list of literal strings into an assignment dict."""
+        assignment = {}
+        for lit_str in literals:
+            try:
+                lit = int(lit_str)
+                if lit == 0:
+                    break
+                var_num = abs(lit)
+                assignment[var_num] = lit > 0
+            except ValueError:
+                continue
+        return assignment
+
+
+class KissatParser(SolverParser):
+    """
+    Parser for Kissat SAT solver output.
+
+    Format:
+        c <comments>
+        s SATISFIABLE
+        v 1 -2 3 4 ...
+        v 5 6 -7 ...
+        v 0
+    """
+
+    name = "kissat"
+
+    def parse(self, content: str) -> Tuple[Optional[str], Dict[int, bool]]:
+        status = None
+        literals = []
+
+        for line in content.split('\n'):
+            line = line.strip()
+
+            # Parse status line
+            if line.startswith('s '):
+                status = line[2:].strip()
+
+            # Parse value lines
+            elif line.startswith('v '):
+                parts = line[2:].split()
+                literals.extend(parts)
+            elif line.startswith('v'):
+                parts = line[1:].split()
+                literals.extend(parts)
+
+        assignment = self._parse_literals(literals)
+        return status, assignment
+
+
+class CadicalParser(SolverParser):
+    """
+    Parser for CaDiCaL SAT solver output.
+
+    Format is identical to Kissat:
+        c <comments>
+        s SATISFIABLE
+        v 1 -2 3 4 ...
+        v 0
+    """
+
+    name = "cadical"
+
+    def parse(self, content: str) -> Tuple[Optional[str], Dict[int, bool]]:
+        # CaDiCaL uses the same format as Kissat
+        return KissatParser().parse(content)
+
+
+class MinisatParser(SolverParser):
+    """
+    Parser for MiniSat/Glucose SAT solver output.
+
+    Format:
+        SAT
+        1 -2 3 4 -5 6 ... 0
+
+    Or for UNSAT:
+        UNSAT
+    """
+
+    name = "minisat"
+
+    def parse(self, content: str) -> Tuple[Optional[str], Dict[int, bool]]:
+        status = None
+        literals = []
+        found_status = False
+
+        for line in content.split('\n'):
+            line = line.strip()
+
+            if not line:
+                continue
+
+            # Parse status line
+            if line == 'SAT':
+                status = 'SATISFIABLE'
+                found_status = True
+            elif line == 'UNSAT':
+                status = 'UNSATISFIABLE'
+                found_status = True
+            elif found_status and status == 'SATISFIABLE':
+                # After SAT line, remaining lines are literals
+                parts = line.split()
+                literals.extend(parts)
+
+        assignment = self._parse_literals(literals)
+        return status, assignment
+
+
+class GlucoseParser(SolverParser):
+    """
+    Parser for Glucose SAT solver output.
+
+    Same format as MiniSat.
+    """
+
+    name = "glucose"
+
+    def parse(self, content: str) -> Tuple[Optional[str], Dict[int, bool]]:
+        return MinisatParser().parse(content)
+
+
+class PlainParser(SolverParser):
+    """
+    Parser for plain DIMACS assignment format.
+
+    Format:
+        1 -2 3 4 -5 6 ... 0
+
+    Or with 'v' prefix (extracted from solver output):
+        v 1 -2 3 4 -5 6 ...
+        v 0
+    """
+
+    name = "plain"
+
+    def parse(self, content: str) -> Tuple[Optional[str], Dict[int, bool]]:
+        literals = []
+
+        # Check if it uses 'v' prefix format
+        if 'v ' in content or content.lstrip().startswith('v'):
+            for line in content.split('\n'):
+                line = line.strip()
+                if line.startswith('v '):
+                    parts = line[2:].split()
+                    literals.extend(parts)
+                elif line.startswith('v'):
+                    parts = line[1:].split()
+                    literals.extend(parts)
+        else:
+            # Plain space-separated format
+            literals = content.split()
+
+        assignment = self._parse_literals(literals)
+        # Plain format doesn't include status
+        return 'SATISFIABLE' if assignment else None, assignment
+
+
+class AutoParser(SolverParser):
+    """
+    Auto-detecting parser that tries to identify the solver format.
+    """
+
+    name = "auto"
+
+    def parse(self, content: str) -> Tuple[Optional[str], Dict[int, bool]]:
+        solver, confidence = self.detect_solver(content)
+        parser = get_parser(solver)
+        return parser.parse(content)
+
+    @staticmethod
+    def detect_solver(content: str) -> Tuple[str, str]:
+        """
+        Detect which SAT solver produced the output.
+
+        Returns:
+            (solver_name, confidence) where confidence is 'high', 'medium', or 'low'
+        """
+        # Check for Kissat signature
+        if 'Kissat SAT Solver' in content:
+            return 'kissat', 'high'
+
+        # Check for CaDiCaL signature
+        if 'CaDiCaL' in content or 'cadical' in content.lower():
+            return 'cadical', 'high'
+
+        # Check for Glucose signature
+        if 'Glucose' in content or 'glucose' in content.lower():
+            return 'glucose', 'high'
+
+        # Check for MiniSat signature
+        if 'MiniSat' in content or 'minisat' in content.lower():
+            return 'minisat', 'high'
+
+        # Check for 's SATISFIABLE' format (Kissat/CaDiCaL style)
+        if re.search(r'^s\s+(SATISFIABLE|UNSATISFIABLE)', content, re.MULTILINE):
+            # Has 'v' lines -> Kissat/CaDiCaL format
+            if re.search(r'^v\s+', content, re.MULTILINE):
+                return 'kissat', 'medium'
+
+        # Check for 'SAT'/'UNSAT' format (MiniSat/Glucose style)
+        if re.search(r'^SAT\s*$', content, re.MULTILINE):
+            return 'minisat', 'medium'
+        if re.search(r'^UNSAT\s*$', content, re.MULTILINE):
+            return 'minisat', 'medium'
+
+        # Check for 'v' lines without 's' line
+        if re.search(r'^v\s+', content, re.MULTILINE):
+            return 'plain', 'medium'
+
+        # Fall back to plain format
+        return 'plain', 'low'
+
+
+# Parser registry
+PARSERS = {
+    'kissat': KissatParser,
+    'cadical': CadicalParser,
+    'minisat': MinisatParser,
+    'glucose': GlucoseParser,
+    'plain': PlainParser,
+    'auto': AutoParser,
+}
+
+
+def get_parser(solver: str) -> SolverParser:
+    """Get a parser instance for the specified solver."""
+    if solver not in PARSERS:
+        raise ValueError(f"Unknown solver: {solver}. Available: {list(PARSERS.keys())}")
+    return PARSERS[solver]()
+
+
 def parse_type_info(type_str: str) -> Tuple[Optional[int], Optional[bool]]:
     """Parse type string to extract width and signedness."""
     # Match patterns like "signedbv[32]", "unsignedbv[64]"
@@ -45,18 +325,59 @@ def parse_type_info(type_str: str) -> Tuple[Optional[int], Optional[bool]]:
     return None, None
 
 
-def parse_dimacs_comments(dimacs_file: str) -> Dict[str, VariableMapping]:
+@dataclass
+class DimacsParseResult:
+    """Result from parsing DIMACS file."""
+    mappings: Dict[str, VariableMapping]
+    tseitin_mappings: Dict[int, TseitinMapping]  # var_no -> TseitinMapping
+    total_vars: int
+    total_clauses: int
+    mapped_cnf_vars: set  # Set of CNF variable numbers that are mapped
+
+
+def parse_dimacs_comments(dimacs_file: str) -> DimacsParseResult:
     """Parse DIMACS file and extract variable mappings from comments."""
     mappings = {}
+    tseitin_mappings = {}
+    mapped_cnf_vars = set()
+    total_vars = 0
+    total_clauses = 0
 
     with open(dimacs_file, 'r') as f:
         for line in f:
+            # Parse problem line
+            if line.startswith('p cnf'):
+                parts = line.split()
+                if len(parts) >= 4:
+                    total_vars = int(parts[2])
+                    total_clauses = int(parts[3])
+                continue
+
             if not line.startswith('c '):
                 continue
 
             # Remove the 'c ' prefix
             content = line[2:].strip()
             if not content:
+                continue
+
+            # Check for @tseitin comments
+            if content.startswith('@tseitin '):
+                parts = content.split()
+                # Format: @tseitin <var_no> <gate_type> <input1> <input2> ...
+                if len(parts) >= 4:
+                    try:
+                        var_no = int(parts[1])
+                        gate_type = parts[2]
+                        inputs = [int(x) for x in parts[3:]]
+                        tseitin_mappings[var_no] = TseitinMapping(
+                            var_no=var_no,
+                            gate_type=gate_type,
+                            inputs=inputs
+                        )
+                        mapped_cnf_vars.add(var_no)
+                    except ValueError:
+                        pass
                 continue
 
             # Check for @type= suffix
@@ -85,7 +406,9 @@ def parse_dimacs_comments(dimacs_file: str) -> Dict[str, VariableMapping]:
                     try:
                         # DIMACS literal (can be negative for negated)
                         lit = int(part)
-                        literals.append(abs(lit))  # Store the variable number
+                        var_num = abs(lit)
+                        literals.append(var_num)  # Store the variable number
+                        mapped_cnf_vars.add(var_num)
                     except ValueError:
                         continue
 
@@ -99,50 +422,54 @@ def parse_dimacs_comments(dimacs_file: str) -> Dict[str, VariableMapping]:
                     is_signed=is_signed
                 )
 
-    return mappings
+    return DimacsParseResult(
+        mappings=mappings,
+        tseitin_mappings=tseitin_mappings,
+        total_vars=total_vars,
+        total_clauses=total_clauses,
+        mapped_cnf_vars=mapped_cnf_vars
+    )
 
 
-def parse_sat_assignment(assignment_file: str) -> Dict[int, bool]:
+@dataclass
+class ParseResult:
+    """Result from parsing SAT solver output."""
+    status: Optional[str]
+    assignment: Dict[int, bool]
+    detected_solver: Optional[str] = None
+    detection_confidence: Optional[str] = None
+
+
+def parse_sat_assignment(assignment_file: str, solver: str = 'auto') -> ParseResult:
     """
     Parse SAT solver output to get variable assignments.
-    Returns a dict mapping variable number to True/False.
-    """
-    assignment = {}
 
+    Args:
+        assignment_file: Path to the solver output file
+        solver: Solver format ('auto', 'kissat', 'cadical', 'minisat', 'glucose', 'plain')
+
+    Returns:
+        ParseResult with status, assignment, and optional detection info
+    """
     with open(assignment_file, 'r') as f:
         content = f.read()
 
-    # Handle different SAT solver output formats
-    # Format 1: Just literals separated by spaces, ending with 0
-    # Format 2: Lines starting with 'v' followed by literals
+    detected_solver = None
+    detection_confidence = None
 
-    literals = []
+    # For auto-detection, detect the solver format
+    if solver == 'auto':
+        detected_solver, detection_confidence = AutoParser.detect_solver(content)
 
-    # Check if it's the 'v' line format
-    if 'v ' in content or content.startswith('v'):
-        for line in content.split('\n'):
-            line = line.strip()
-            if line.startswith('v '):
-                parts = line[2:].split()
-                literals.extend(parts)
-            elif line.startswith('v'):
-                parts = line[1:].split()
-                literals.extend(parts)
-    else:
-        # Plain format: just space-separated literals
-        literals = content.split()
+    parser = get_parser(solver)
+    status, assignment = parser.parse(content)
 
-    for lit_str in literals:
-        try:
-            lit = int(lit_str)
-            if lit == 0:
-                break
-            var_num = abs(lit)
-            assignment[var_num] = lit > 0
-        except ValueError:
-            continue
-
-    return assignment
+    return ParseResult(
+        status=status,
+        assignment=assignment,
+        detected_solver=detected_solver,
+        detection_confidence=detection_confidence
+    )
 
 
 def interpret_bitvector(literals: List, assignment: Dict[int, bool],
@@ -290,29 +617,229 @@ def format_variable_name(ssa_name: str) -> Tuple[str, str]:
     return ssa_name, ""
 
 
+def create_argument_parser() -> argparse.ArgumentParser:
+    """Create and configure the argument parser."""
+    parser = argparse.ArgumentParser(
+        description='Interpret SAT solver assignments using CBMC variable mappings.',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Supported solver formats:
+  kissat   - Kissat SAT Solver (s/v line format)
+  cadical  - CaDiCaL SAT Solver (s/v line format)
+  minisat  - MiniSat SAT Solver (SAT/UNSAT + literals)
+  glucose  - Glucose SAT Solver (same as minisat)
+  plain    - Plain DIMACS assignment format
+  auto     - Auto-detect based on file content (default)
+
+Examples:
+  %(prog)s program.cnf sat_output.txt
+  %(prog)s program.cnf sat_output.txt --solver kissat
+  %(prog)s program.cnf sat_output.txt --filter main::x
+  %(prog)s program.cnf sat_output.txt --all
+        """
+    )
+
+    parser.add_argument(
+        'dimacs_file',
+        help='DIMACS CNF file with CBMC variable mapping comments'
+    )
+
+    parser.add_argument(
+        'assignment_file',
+        help='SAT solver output file with variable assignment'
+    )
+
+    parser.add_argument(
+        '--solver', '-s',
+        choices=['auto', 'kissat', 'cadical', 'minisat', 'glucose', 'plain'],
+        default='auto',
+        help='SAT solver output format (default: auto-detect)'
+    )
+
+    parser.add_argument(
+        '--all', '-a',
+        action='store_true',
+        dest='show_all',
+        help='Show CPROVER internal variables'
+    )
+
+    parser.add_argument(
+        '--filter', '-f',
+        dest='var_filter',
+        metavar='PATTERN',
+        help='Only show variables matching this pattern'
+    )
+
+    parser.add_argument(
+        '--quiet', '-q',
+        action='store_true',
+        help='Suppress informational messages'
+    )
+
+    parser.add_argument(
+        '--show-cnf-vars', '-v',
+        action='store_true',
+        dest='show_cnf_vars',
+        help='Show CNF variable numbers for each decoded variable'
+    )
+
+    parser.add_argument(
+        '--coverage', '-c',
+        action='store_true',
+        help='Show summary of CNF variable coverage'
+    )
+
+    parser.add_argument(
+        '--unmapped', '-u',
+        action='store_true',
+        help='List all unmapped CNF variable numbers'
+    )
+
+    parser.add_argument(
+        '--var-table', '-t',
+        action='store_true',
+        dest='var_table',
+        help='Output CSV lookup table: CNF_var -> program_var (for activity score correlation)'
+    )
+
+    return parser
+
+
+def format_cnf_vars(literals: List) -> str:
+    """Format CNF variable numbers for display."""
+    # Extract only numeric literals (skip TRUE/FALSE)
+    numeric_lits = [lit for lit in literals if isinstance(lit, int)]
+    if not numeric_lits:
+        return "(all constant)"
+
+    # Check if they're consecutive
+    if len(numeric_lits) > 1:
+        min_lit = min(numeric_lits)
+        max_lit = max(numeric_lits)
+        if max_lit - min_lit + 1 == len(numeric_lits):
+            # Consecutive range
+            return f"[{min_lit}..{max_lit}]"
+
+    # Not consecutive or just one, list them
+    if len(numeric_lits) <= 8:
+        return f"[{', '.join(str(l) for l in numeric_lits)}]"
+    else:
+        # Too many, show range summary
+        return f"[{numeric_lits[0]}..{numeric_lits[-1]}] ({len(numeric_lits)} vars)"
+
+
 def main():
-    if len(sys.argv) < 3:
-        print(__doc__)
-        sys.exit(1)
+    parser = create_argument_parser()
+    args = parser.parse_args()
 
-    dimacs_file = sys.argv[1]
-    assignment_file = sys.argv[2]
+    dimacs_file = args.dimacs_file
+    assignment_file = args.assignment_file
+    solver = args.solver
+    show_all = args.show_all
+    var_filter = args.var_filter
+    quiet = args.quiet
+    show_cnf_vars = args.show_cnf_vars
+    show_coverage = args.coverage
+    show_unmapped = args.unmapped
+    var_table = args.var_table
 
-    # Optional: filter to show only certain variables
-    show_all = '--all' in sys.argv
-    var_filter = None
-    for arg in sys.argv[3:]:
-        if arg != '--all':
-            var_filter = arg
-            break
+    if not quiet:
+        print(f"Parsing DIMACS file: {dimacs_file}")
+    dimacs_result = parse_dimacs_comments(dimacs_file)
+    mappings = dimacs_result.mappings
+    if not quiet:
+        print(f"Found {len(mappings)} variable mappings")
 
-    print(f"Parsing DIMACS file: {dimacs_file}")
-    mappings = parse_dimacs_comments(dimacs_file)
-    print(f"Found {len(mappings)} variable mappings")
+    if not quiet:
+        print(f"\nParsing SAT assignment: {assignment_file}")
+    result = parse_sat_assignment(assignment_file, solver)
+    assignment = result.assignment
+    if not quiet:
+        if result.detected_solver:
+            print(f"Auto-detected solver format: {result.detected_solver} (confidence: {result.detection_confidence})")
+        print(f"Found {len(assignment)} variable assignments")
+        if result.status:
+            print(f"Solver status: {result.status}")
 
-    print(f"\nParsing SAT assignment: {assignment_file}")
-    assignment = parse_sat_assignment(assignment_file)
-    print(f"Found {len(assignment)} variable assignments")
+    # Show coverage summary if requested
+    if show_coverage or show_unmapped:
+        print("\n" + "="*70)
+        print("CNF VARIABLE COVERAGE")
+        print("="*70)
+
+        all_cnf_vars = set(range(1, dimacs_result.total_vars + 1))
+        unmapped_vars = all_cnf_vars - dimacs_result.mapped_cnf_vars
+        num_tseitin = len(dimacs_result.tseitin_mappings)
+        num_program_vars = len(dimacs_result.mapped_cnf_vars) - num_tseitin
+
+        print(f"\nTotal CNF variables:    {dimacs_result.total_vars}")
+        print(f"Total CNF clauses:      {dimacs_result.total_clauses}")
+        print(f"Mapped program vars:    {num_program_vars}")
+        print(f"Mapped Tseitin vars:    {num_tseitin}")
+        print(f"Total mapped vars:      {len(dimacs_result.mapped_cnf_vars)}")
+        print(f"Unmapped CNF variables: {len(unmapped_vars)}")
+
+        coverage_pct = 100.0 * len(dimacs_result.mapped_cnf_vars) / dimacs_result.total_vars if dimacs_result.total_vars > 0 else 0
+        print(f"Coverage:               {coverage_pct:.1f}%")
+
+        if show_unmapped and unmapped_vars:
+            print(f"\nUnmapped variable numbers:")
+            # Group consecutive numbers for cleaner display
+            sorted_unmapped = sorted(unmapped_vars)
+            ranges = []
+            start = sorted_unmapped[0]
+            end = start
+            for v in sorted_unmapped[1:]:
+                if v == end + 1:
+                    end = v
+                else:
+                    ranges.append((start, end))
+                    start = v
+                    end = v
+            ranges.append((start, end))
+
+            for start, end in ranges:
+                if start == end:
+                    print(f"  {start}")
+                else:
+                    print(f"  {start}-{end} ({end - start + 1} vars)")
+
+            print(f"\nNote: Unmapped variables may include internal CBMC variables")
+            print(f"      that are not tracked by Tseitin metadata.")
+
+    # Output var-table (CSV lookup table) if requested
+    if var_table:
+        print("\n" + "="*70)
+        print("CNF VARIABLE LOOKUP TABLE (CSV)")
+        print("="*70)
+        print("\ncnf_var,bit_index,program_var,type,gate_inputs")
+
+        # Build lookup: cnf_var -> (program_var, bit_index, type, gate_inputs)
+        cnf_to_var = {}
+        for ssa_name, mapping in mappings.items():
+            display_name, ssa_info = format_variable_name(ssa_name)
+            full_name = f"{display_name}#{ssa_info.replace('SSA#', '')}" if 'SSA#' in ssa_info else display_name
+
+            for bit_idx, lit in enumerate(mapping.literals):
+                if isinstance(lit, int):
+                    cnf_to_var[lit] = (full_name, bit_idx, mapping.type_info, "")
+
+        # Add Tseitin mappings
+        tseitin_mappings = dimacs_result.tseitin_mappings
+        for var_no, tseitin in tseitin_mappings.items():
+            inputs_str = " ".join(str(x) for x in tseitin.inputs)
+            cnf_to_var[var_no] = (f"<{tseitin.gate_type}>", -1, "tseitin", inputs_str)
+
+        # Output sorted by CNF variable number
+        for cnf_var in sorted(cnf_to_var.keys()):
+            prog_var, bit_idx, var_type, gate_inputs = cnf_to_var[cnf_var]
+            print(f"{cnf_var},{bit_idx},{prog_var},{var_type},{gate_inputs}")
+
+        # Also list any remaining unmapped variables (should be none if tracking is complete)
+        all_cnf_vars = set(range(1, dimacs_result.total_vars + 1))
+        unmapped = sorted(all_cnf_vars - set(cnf_to_var.keys()))
+        for cnf_var in unmapped:
+            print(f"{cnf_var},-1,<unknown>,unmapped,")
 
     print("\n" + "="*70)
     print("INTERPRETED VARIABLE VALUES")
@@ -353,7 +880,8 @@ def main():
             'display_name': display_name,
             'ssa_info': ssa_info,
             'value': value,
-            'type': mapping.type_info
+            'type': mapping.type_info,
+            'literals': mapping.literals,  # Store for --show-cnf-vars
         }
 
         if ssa_name.startswith('__CPROVER') or ssa_name.startswith('symex::'):
@@ -372,13 +900,21 @@ def main():
         for entry in sorted_vars:
             ssa_suffix = f"  ({entry['ssa_info']})" if entry['ssa_info'] else ""
             type_suffix = f"  [{entry['type']}]"
-            print(f"{entry['display_name']:40} = {entry['value']}{ssa_suffix}{type_suffix}")
+            line = f"{entry['display_name']:40} = {entry['value']}{ssa_suffix}{type_suffix}"
+            print(line)
+            if show_cnf_vars:
+                cnf_str = format_cnf_vars(entry['literals'])
+                print(f"{'':40}   CNF vars: {cnf_str}")
 
     # Print CPROVER internal variables (optional, usually less interesting)
     if cprover_vars and (var_filter or show_all):
         print("\n--- CPROVER Internal Variables ---\n")
         for ssa_name, entry in sorted(cprover_vars.items()):
-            print(f"{entry['display_name']:40} = {entry['value']}  [{entry['type']}]")
+            line = f"{entry['display_name']:40} = {entry['value']}  [{entry['type']}]"
+            print(line)
+            if show_cnf_vars:
+                cnf_str = format_cnf_vars(entry['literals'])
+                print(f"{'':40}   CNF vars: {cnf_str}")
 
     print("\n" + "="*70)
 
