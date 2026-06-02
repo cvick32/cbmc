@@ -39,6 +39,8 @@ protected:
   void write_problem_line(std::ostream &out) const;
   void write_clauses(std::ostream &out) const;
 
+  std::size_t max_clause_variable() const;
+
   bool break_lines;
 };
 

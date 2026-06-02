@@ -41,10 +41,22 @@ void dimacs_cnft::write_dimacs_cnf(std::ostream &out) const
   write_clauses(out);
 }
 
+std::size_t dimacs_cnft::max_clause_variable() const
+{
+  std::size_t max_var = 0;
+  for(const auto &clause : clauses)
+    for(const auto &lit : clause)
+      if(!lit.is_constant() && lit.var_no() > max_var)
+        max_var = lit.var_no();
+  return max_var;
+}
+
 void dimacs_cnft::write_problem_line(std::ostream &out) const
 {
-  // We start counting at 1, thus there is one variable fewer.
-  out << "p cnf " << (no_variables()-1) << " "
+  // The DIMACS header declares the number of variables. CBMC allocates a
+  // top-level context literal (prop_conv::context$0) that, for a single context, 
+  // is never emitted into a clause -- so no_variables()-1 over-counts by one.
+  out << "p cnf " << max_clause_variable() << " "
       << clauses.size() << "\n";
 }
 
